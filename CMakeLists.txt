@@ -13,6 +13,8 @@ include(AddLLVM)
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
+set(LLVM_OPTIONAL_SOURCES x.c)
+
 set(LLVM_LINK_COMPONENTS core support)
 
 add_llvm_library(po-bug MODULE po-bug.cpp)

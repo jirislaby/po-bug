@@ -47,14 +47,11 @@ void MyChecker::checkEndOfTranslationUnit(const TranslationUnitDecl *TU,
 
 	MatchFinder F;
 	MatchCallback CB;
-	F.addMatcher(traverse(TK_IgnoreUnlessSpelledInSource, recordDecl(isStruct()).bind("RD")),
-		     &CB);
-	F.addMatcher(traverse(TK_IgnoreUnlessSpelledInSource, memberExpr().bind("ME")),
-		     &CB);
+	F.addMatcher(traverse(TK_IgnoreUnlessSpelledInSource, recordDecl(isStruct()).bind("RD")), &CB);
+	F.addMatcher(traverse(TK_IgnoreUnlessSpelledInSource, memberExpr().bind("ME")), &CB);
 	F.addMatcher(traverse(TK_IgnoreUnlessSpelledInSource,
 			      binaryOperator(isAssignmentOperator(),
-					     hasLHS(memberExpr().bind("MESTORE")))),
-		     &CB);
+					     hasLHS(memberExpr().bind("MESTORE")))), &CB);
 
 	F.matchAST(A.getASTContext());
 }
@@ -63,5 +60,4 @@ extern "C" void clang_registerCheckers(CheckerRegistry &registry) {
   registry.addChecker<MyChecker>("jirislaby.PoBug", "XXX", "");
 }
 
-extern "C" const char clang_analyzerAPIVersionString[] =
-		CLANG_ANALYZER_API_VERSION_STRING;
+extern "C" const char clang_analyzerAPIVersionString[] = CLANG_ANALYZER_API_VERSION_STRING;
