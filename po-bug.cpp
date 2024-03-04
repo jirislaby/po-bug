@@ -8,22 +8,15 @@ using namespace clang::ast_matchers;
 using namespace clang::ento;
 
 namespace {
-class MyChecker final : public Checker<check::EndOfTranslationUnit> {
+class MyChecker final : public Checker<check::EndOfTranslationUnit>, public MatchFinder::MatchCallback {
 public:
   void checkEndOfTranslationUnit(const TranslationUnitDecl *TU,
 				 AnalysisManager &A, BugReporter &BR) const;
-};
-
-class MatchCallback : public MatchFinder::MatchCallback {
-public:
-	MatchCallback() {}
-
-	void run(const MatchFinder::MatchResult &res);
-private:
+  void run(const MatchFinder::MatchResult &res);
 };
 }
 
-void MatchCallback::run(const MatchFinder::MatchResult &res)
+void MyChecker::run(const MatchFinder::MatchResult &res)
 {
 	if (auto RD = res.Nodes.getNodeAs<RecordDecl>("RD")) {
 		llvm::errs() << "RD:\n";
@@ -45,12 +38,12 @@ void MyChecker::checkEndOfTranslationUnit(const TranslationUnitDecl *TU,
 {
 	TU->dumpColor();
 
+	auto me = const_cast<MyChecker *>(this);
 	MatchFinder F;
-	MatchCallback CB;
 
-	F.addMatcher(traverse(TK_IgnoreUnlessSpelledInSource, recordDecl(isStruct()).bind("RD")), &CB);
-	F.addMatcher(traverse(TK_IgnoreUnlessSpelledInSource, memberExpr().bind("ME")), &CB);
-	F.addMatcher(traverse(TK_IgnoreUnlessSpelledInSource, binaryOperator().bind("BO")), &CB);
+	F.addMatcher(recordDecl(isStruct()).bind("RD"), me);
+	F.addMatcher(memberExpr().bind("ME"), me);
+	F.addMatcher(binaryOperator().bind("BO"), me);
 
 	F.matchAST(A.getASTContext());
 }
