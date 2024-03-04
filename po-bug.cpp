@@ -33,9 +33,9 @@ void MatchCallback::run(const MatchFinder::MatchResult &res)
 		llvm::errs() << "ME:\n";
 		ME->dumpColor();
 	}
-	if (auto ME = res.Nodes.getNodeAs<MemberExpr>("MESTORE")) {
-		llvm::errs() << "MESTORE:\n";
-		ME->dumpColor();
+	if (auto BO = res.Nodes.getNodeAs<BinaryOperator>("BO")) {
+		llvm::errs() << "BO:\n";
+		BO->dumpColor();
 	}
 }
 
@@ -47,11 +47,10 @@ void MyChecker::checkEndOfTranslationUnit(const TranslationUnitDecl *TU,
 
 	MatchFinder F;
 	MatchCallback CB;
+
 	F.addMatcher(traverse(TK_IgnoreUnlessSpelledInSource, recordDecl(isStruct()).bind("RD")), &CB);
 	F.addMatcher(traverse(TK_IgnoreUnlessSpelledInSource, memberExpr().bind("ME")), &CB);
-	F.addMatcher(traverse(TK_IgnoreUnlessSpelledInSource,
-			      binaryOperator(isAssignmentOperator(),
-					     hasLHS(memberExpr().bind("MESTORE")))), &CB);
+	F.addMatcher(traverse(TK_IgnoreUnlessSpelledInSource, binaryOperator().bind("BO")), &CB);
 
 	F.matchAST(A.getASTContext());
 }
